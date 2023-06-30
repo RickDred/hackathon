@@ -14,6 +14,6 @@ type Student struct {
 }
 
 type password struct {
-	plaintext *string
-	hash      []byte
+	Plaintext *string
+	Hash      []byte
 }
