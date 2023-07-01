@@ -1,7 +1,6 @@
-package handlers
+package v1
 
 import (
-	"encoding/json"
 	"net/http"
 )
 
@@ -13,7 +12,5 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// Return a success response
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(env)
+	WriteJSON(w, http.StatusOK, env, nil)
 }

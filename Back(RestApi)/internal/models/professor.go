@@ -1,7 +1,7 @@
 package models
 
 type Professor struct {
-	Id         int64    `json:"id"`
+	Id         string   `json:"id"`
 	Name       string   `json:"name"`
 	Email      string   `json:"email"`
 	Department string   `json:"department"`

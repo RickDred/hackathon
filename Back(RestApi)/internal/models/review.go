@@ -1,7 +1,7 @@
 package models
 
 type Review struct {
-	Id             int64   `json:"id"`
+	Id             string  `json:"id"`
 	StudentId      int64   `json:"student_id"`
 	ProfessorId    int64   `json:"professor_id"`
 	Communication  []int64 `json:"communication"`

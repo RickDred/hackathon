@@ -7,10 +7,10 @@ var (
 )
 
 type Student struct {
-	Id       int64    `json:"id"`
+	Id       string   `json:"id"`
 	Name     string   `json:"name"`
 	Email    string   `json:"email"`
-	Password password `json:"-"`
+	Password password `json:"password"`
 }
 
 type password struct {
