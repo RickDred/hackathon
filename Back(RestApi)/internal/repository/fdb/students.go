@@ -85,14 +85,14 @@ func (s StudentsRepo) GetAll(ctx context.Context, f filters.Filters) ([]models.S
 	return students, metadata, nil
 }
 
-func (s StudentsRepo) Create(ctx context.Context, student models.Student) (models.Student, error) {
+func (s StudentsRepo) Create(ctx context.Context, student *models.Student) error {
 	d := s.db.NewDoc()
 	student.Id = d.ID
 	_, err := d.Create(ctx, student)
 	if err != nil {
-		return models.Student{}, err
+		return err
 	}
-	return student, nil
+	return nil
 }
 
 func (s StudentsRepo) DeleteById(ctx context.Context, id string) error {

@@ -3,9 +3,12 @@ package repository
 import (
 	"cloud.google.com/go/firestore"
 	"context"
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 	"hackathon/internal/models"
 	"hackathon/internal/repository/fdb"
 	"hackathon/pkg/filters"
+	"log"
 )
 
 type Professors interface {
@@ -21,7 +24,7 @@ type Students interface {
 	GetById(ctx context.Context, id string) (models.Student, error)
 	GetByEmail(ctx context.Context, email string) (models.Student, error)
 	GetAll(ctx context.Context, filters filters.Filters) ([]models.Student, filters.Metadata, error)
-	Create(ctx context.Context, student models.Student) (models.Student, error)
+	Create(ctx context.Context, student *models.Student) error
 	DeleteById(ctx context.Context, id string) error
 	UpdateById(ctx context.Context, student models.Student, id string) (models.Student, error)
 }
@@ -46,4 +49,15 @@ func NewFBRepository(db *firestore.Client) *Repositories {
 		Professors: fdb.NewProfessorsRepo(db),
 		Reviews:    fdb.NewReviewsRepo(db),
 	}
+}
+
+func InitFBDB() (*firebase.App, error) {
+	opt := option.WithCredentialsFile("internal/repository/fdb/firebase.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase app: %v", err)
+		return nil, err
+	}
+
+	return app, nil
 }

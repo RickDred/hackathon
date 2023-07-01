@@ -2,54 +2,37 @@ package app
 
 import (
 	"context"
-	"fmt"
-	v1 "hackathon/internal/delivery/http"
+	"hackathon/internal/delivery/http"
 	"hackathon/internal/repository"
-	"hackathon/internal/repository/fdb"
-	"hackathon/pkg/filters"
+	"hackathon/internal/services"
 	"log"
-	"net/http"
 )
 
 func Run() {
-	app, err := fdb.InitDB()
+	// init database
+	fb, err := repository.InitFBDB()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf(err.Error())
 	}
 
-	client, err := app.Firestore(context.Background())
+	// take a client
+	client, err := fb.Firestore(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf(err.Error())
 	}
-	defer client.Close()
 
-	rp := repository.NewFBRepository(client)
+	// get firebase repository
+	rep := repository.NewFBRepository(client)
 
-	professors, _, _ := rp.Professors.GetAll(context.Background(), filters.Filters{})
+	// create new service
+	s := services.NewServices(*rep)
 
-	fmt.Println(professors)
+	// create handler
+	h := http.NewHandler(s.StudentService, s.ProfessorService, s.ReviewService)
 
-	//rp.Professors.Create(context.Background(), models.Professor{
-	//	Name:       "Askar",
-	//	Email:      "Askar@gmail.com",
-	//	Department: "OOP",
-	//	Degree:     "10",
-	//	Subjects: []string{
-	//		"OOP",
-	//		"Advanced",
-	//	},
-	//})
+	// init router
+	r := h.Init()
 
-	//client.Collection("test").Add(context.Background(), map[string]interface{}{
-	//	"name":    "Los Angeles",
-	//	"state":   "CA",
-	//	"country": "USA",
-	//})
-	//if err != nil {
-	//	// Handle any errors in an appropriate way, such as returning them.
-	//	log.Printf("An error has occurred: %s", err)
-	//}
+	r.Run()
 
-	router := v1.InitRouter()
-	log.Fatal(http.ListenAndServe(":8080", router))
 }

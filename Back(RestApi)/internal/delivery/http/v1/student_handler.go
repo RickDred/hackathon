@@ -1,49 +1,53 @@
 package v1
 
-//func RegisterStudent(w http.ResponseWriter, r *http.Request) {
-//	var input struct {
-//		Id       int64  `json:"id"`
-//		Name     string `json:"name"`
-//		Email    string `json:"email"`
-//		Password string `json:"password"`
-//	}
-//
-//	// Parse the request body
-//	err := json.NewDecoder(r.Body).Decode(&input)
-//	if err != nil {
-//		http.Error(w, "Invalid request body", http.StatusBadRequest)
-//		return
-//	}
-//
-//	// Call the student service to register the student
-//	err = services.RegisterStudent(&input)
-//	if err != nil {
-//		http.Error(w, "Failed to register student", http.StatusInternalServerError)
-//		return
-//	}
-//
-//	WriteJSON(w, http.StatusOK, input, nil)
-//}
-//
-//// LoginStudent handles the user login endpoint
-//func LoginStudent(w http.ResponseWriter, r *http.Request) {
-//	var credentials models.UserCredentials
-//
-//	// Parse the request body
-//	err := json.NewDecoder(r.Body).Decode(&credentials)
-//	if err != nil {
-//		http.Error(w, "Invalid request body", http.StatusBadRequest)
-//		return
-//	}
-//
-//	// Call the user service to authenticate the user
-//	token, err := services.AuthenticateUser(credentials.Email, credentials.Password)
-//	if err != nil {
-//		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-//		return
-//	}
-//
-//	// Return the generated token as the response
-//	w.WriteHeader(http.StatusOK)
-//	json.NewEncoder(w).Encode(token)
-//}
+import (
+	"github.com/gin-gonic/gin"
+	"hackathon/internal/models"
+	"net/http"
+)
+
+func (h *Handler) initStudentsRoutes(api *gin.RouterGroup) {
+	api.POST("/register", h.registerStudent)
+	api.POST("/auth", h.loginStudent)
+}
+
+func (h *Handler) registerStudent(c *gin.Context) {
+	var student models.Student
+	if err := c.BindJSON(&student); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if student.Email == "" || student.Name == "" || student.Password == "" {
+		newErrorResponse(c, http.StatusBadRequest, "error: empty fields")
+		return
+	}
+
+	err := h.studentService.RegisterStudent(c.Request.Context(), &student)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, student)
+}
+
+func (h *Handler) loginStudent(c *gin.Context) {
+	var input struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if input.Email == "" || input.Password == "" {
+		newErrorResponse(c, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	student, err := h.studentService.AuthenticateStudent(c.Request.Context(), input.Email, input.Password)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+	}
+	c.JSON(http.StatusOK, student)
+}

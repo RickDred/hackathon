@@ -1,21 +1,46 @@
 package services
 
 import (
+	"context"
 	"errors"
-	"fmt"
 	"hackathon/internal/models"
+	"hackathon/internal/repository"
+	"hackathon/pkg/validator"
 )
 
+type StudentsService struct {
+	repo repository.Students
+}
+
+func NewStudentsService(repo repository.Students) *StudentsService {
+	return &StudentsService{repo}
+}
+
 // RegisterStudent registers a new student
-func RegisterStudent(user *models.Student) error {
-	if user.Email == "" || *user.Password.Plaintext == "" {
-		return errors.New("email and password are required")
+func (s *StudentsService) RegisterStudent(ctx context.Context, student *models.Student) error {
+	var err error
+	student.Password, err = Hash(student.Password)
+	if err != nil {
+		return err
 	}
-	return nil
+
+	v := validator.New()
+	if ValidateStudent(v, student); !v.Valid() {
+		return errors.New("data is not valid")
+	}
+	return s.repo.Create(ctx, student)
 }
 
 // AuthenticateStudent authenticates a user with the provided email and password
-func AuthenticateStudent(email, password string) (string, error) {
+func (s *StudentsService) AuthenticateStudent(ctx context.Context, email, password string) (*models.Student, error) {
+	student, err := s.repo.GetByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
 
-	return "", fmt.Errorf("authentication failed")
+	if !CheckHash(password, student.Password) {
+		return nil, errors.New("wrong password")
+	}
+
+	return &student, nil
 }
