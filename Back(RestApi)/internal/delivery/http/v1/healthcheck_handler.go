@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"hackathon/pkg/helpers"
 	"net/http"
 )
 
@@ -12,5 +13,5 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	WriteJSON(w, http.StatusOK, env, nil)
+	helpers.WriteJSON(w, http.StatusOK, env, nil)
 }

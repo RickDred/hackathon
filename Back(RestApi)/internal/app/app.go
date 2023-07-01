@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
+	"fmt"
 	v1 "hackathon/internal/delivery/http"
-	"hackathon/internal/models"
 	"hackathon/internal/repository"
 	"hackathon/internal/repository/fdb"
+	"hackathon/pkg/filters"
 	"log"
 	"net/http"
 )
@@ -23,16 +24,21 @@ func Run() {
 	defer client.Close()
 
 	rp := repository.NewFBRepository(client)
-	rp.Professors.Create(context.Background(), models.Professor{
-		Name:       "NG(test)",
-		Email:      "ok@gmail.com",
-		Department: "calculus",
-		Degree:     "2",
-		Subjects: []string{
-			"calc2",
-			"discrete",
-		},
-	})
+
+	professors, _, _ := rp.Professors.GetAll(context.Background(), filters.Filters{})
+
+	fmt.Println(professors)
+
+	//rp.Professors.Create(context.Background(), models.Professor{
+	//	Name:       "Askar",
+	//	Email:      "Askar@gmail.com",
+	//	Department: "OOP",
+	//	Degree:     "10",
+	//	Subjects: []string{
+	//		"OOP",
+	//		"Advanced",
+	//	},
+	//})
 
 	//client.Collection("test").Add(context.Background(), map[string]interface{}{
 	//	"name":    "Los Angeles",
