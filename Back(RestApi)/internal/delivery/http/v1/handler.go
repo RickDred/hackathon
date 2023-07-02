@@ -1,8 +1,9 @@
 package v1
 
 import (
-	"github.com/gin-gonic/gin"
 	"hackathon/internal/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -25,5 +26,6 @@ func (h *Handler) Init(api *gin.RouterGroup) {
 		h.initStudentsRoutes(v1)
 		h.initHealthCheckRoutes(v1)
 		h.initProfessorsRoutes(v1)
+		h.initreviewsRoutes(v1)
 	}
 }

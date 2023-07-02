@@ -27,6 +27,10 @@ type ProfessorService interface {
 }
 
 type ReviewService interface {
+	AddNewReview(ctx context.Context, review *models.Review) (models.Review, error)
+	ListReviewsByProfessor(ctx context.Context, id string, f filters.Filters) ([]models.Review, filters.Metadata, error)
+	UpdateReview(ctx context.Context, review *models.Review) (models.Review, error)
+	DeleteReview(ctx context.Context, id string) error
 }
 
 type Services struct {
