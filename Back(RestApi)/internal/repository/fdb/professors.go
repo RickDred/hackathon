@@ -13,7 +13,7 @@ type ProfessorsRepo struct {
 	db *firestore.CollectionRef
 }
 
-func (p ProfessorsRepo) GetAll(ctx context.Context, f filters.Filters) ([]models.Professor, filters.Metadata, error) {
+func (p ProfessorsRepo) GetAll(ctx context.Context, name string, department string, degree string, f *filters.Filters) ([]models.Professor, *filters.Metadata, error) {
 	if f.PageSize == 0 {
 		f.PageSize = 25
 	}
@@ -25,11 +25,23 @@ func (p ProfessorsRepo) GetAll(ctx context.Context, f filters.Filters) ([]models
 	}
 
 	v := validator.New()
-	filters.ValidateFilters(v, f)
+	filters.ValidateFilters(v, *f)
 
 	var professors []models.Professor
 
-	iter := p.db.OrderBy(f.SortColumn(), firestore.Direction(f.SortDirection())).Limit(f.Limit()).Offset(f.Offset()).Documents(ctx)
+	q := p.db.OrderBy(f.SortColumn(), firestore.Direction(f.SortDirection())).Limit(f.Limit()).Offset(f.Offset())
+
+	if name != "" {
+		q = q.Where("Name", "==", name)
+	}
+	if department != "" {
+		q = q.Where("Department", "==", department)
+	}
+	if degree != "" {
+		q = q.Where("Degree", "==", degree)
+	}
+
+	iter := q.Documents(ctx)
 	defer iter.Stop()
 
 	totalRecords := 0
@@ -40,17 +52,17 @@ func (p ProfessorsRepo) GetAll(ctx context.Context, f filters.Filters) ([]models
 			break
 		}
 		if err != nil {
-			return nil, filters.Metadata{}, err
+			return nil, nil, err
 		}
 		var professor models.Professor
 		if err := doc.DataTo(&professor); err != nil {
-			return nil, filters.Metadata{}, err
+			return nil, nil, err
 		}
 		professors = append(professors, professor)
 		totalRecords++
 	}
 	metadata := filters.CalculateMetadata(totalRecords, f.Page, f.PageSize)
-	return professors, metadata, nil
+	return professors, &metadata, nil
 }
 
 func (p ProfessorsRepo) GetById(ctx context.Context, id string) (models.Professor, error) {
@@ -70,8 +82,8 @@ func (p ProfessorsRepo) GetById(ctx context.Context, id string) (models.Professo
 	return professor, nil
 }
 
-func (p ProfessorsRepo) GetByName(ctx context.Context, name string) (models.Professor, error) {
-	iter := p.db.Where("Name", "==", name).Documents(ctx)
+func (p ProfessorsRepo) GetByEmail(ctx context.Context, email string) (models.Professor, error) {
+	iter := p.db.Where("Email", "==", email).Documents(ctx)
 	defer iter.Stop()
 
 	var professor models.Professor
@@ -87,14 +99,11 @@ func (p ProfessorsRepo) GetByName(ctx context.Context, name string) (models.Prof
 	return professor, nil
 }
 
-func (p ProfessorsRepo) Create(ctx context.Context, professor models.Professor) (models.Professor, error) {
+func (p ProfessorsRepo) Create(ctx context.Context, professor *models.Professor) error {
 	d := p.db.NewDoc()
 	professor.Id = d.ID
 	_, err := d.Create(ctx, professor)
-	if err != nil {
-		return models.Professor{}, err
-	}
-	return professor, nil
+	return err
 }
 
 func (p ProfessorsRepo) DeleteById(ctx context.Context, id string) error {
@@ -102,13 +111,10 @@ func (p ProfessorsRepo) DeleteById(ctx context.Context, id string) error {
 	return err
 }
 
-func (p ProfessorsRepo) UpdateById(ctx context.Context, professor models.Professor, id string) (models.Professor, error) {
+func (p ProfessorsRepo) UpdateById(ctx context.Context, professor models.Professor, id string) error {
 	professor.Id = id
 	_, err := p.db.Doc(id).Set(ctx, professor)
-	if err != nil {
-		return models.Professor{}, err
-	}
-	return professor, err
+	return err
 }
 
 func NewProfessorsRepo(db *firestore.Client) *ProfessorsRepo {

@@ -12,21 +12,23 @@ import (
 )
 
 type Professors interface {
-	GetAll(ctx context.Context, filters filters.Filters) ([]models.Professor, filters.Metadata, error)
+	GetAll(ctx context.Context, name string, department string, degree string, filters *filters.Filters) ([]models.Professor, *filters.Metadata, error)
 	GetById(ctx context.Context, id string) (models.Professor, error)
-	GetByName(ctx context.Context, name string) (models.Professor, error)
-	Create(ctx context.Context, professor models.Professor) (models.Professor, error)
+	GetByEmail(ctx context.Context, email string) (models.Professor, error)
+	Create(ctx context.Context, professor *models.Professor) error
 	DeleteById(ctx context.Context, id string) error
-	UpdateById(ctx context.Context, professor models.Professor, id string) (models.Professor, error)
+	UpdateById(ctx context.Context, professor models.Professor, id string) error
+	CreateMessage(ctx context.Context, data string, professorId string, senderId string) error
+	GetAllMessage(ctx context.Context, professorId string) ([]models.Message, error)
 }
 
 type Students interface {
-	GetById(ctx context.Context, id string) (models.Student, error)
-	GetByEmail(ctx context.Context, email string) (models.Student, error)
-	GetAll(ctx context.Context, filters filters.Filters) ([]models.Student, filters.Metadata, error)
+	GetById(ctx context.Context, id string) (*models.Student, error)
+	GetByEmail(ctx context.Context, email string) (*models.Student, error)
+	GetAll(ctx context.Context, name string, email string, filters *filters.Filters) ([]models.Student, *filters.Metadata, error)
 	Create(ctx context.Context, student *models.Student) error
 	DeleteById(ctx context.Context, id string) error
-	UpdateById(ctx context.Context, student models.Student, id string) (models.Student, error)
+	UpdateById(ctx context.Context, student *models.Student, id string) error
 }
 
 type Reviews interface {

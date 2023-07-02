@@ -24,5 +24,6 @@ func (h *Handler) Init(api *gin.RouterGroup) {
 	{
 		h.initStudentsRoutes(v1)
 		h.initHealthCheckRoutes(v1)
+		h.initProfessorsRoutes(v1)
 	}
 }
