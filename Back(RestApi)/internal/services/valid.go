@@ -21,3 +21,9 @@ func ValidateStudent(v *validator.Validator, student *models.Student) {
 	ValidateEmail(v, student.Email)
 	ValidatePasswordPlaintext(v, student.Password)
 }
+func ValidateReview(v *validator.Validator, review *models.Review) {
+	v.Check(review.Feedback != "", "feedback", "must be provided")
+	v.Check(review.Grading != nil, "grading", "must be provided")
+	v.Check(review.Materials != nil, "materials", "must be provided")
+	v.Check(review.Overall != nil, "overall", "must be provided")
+}
